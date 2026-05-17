@@ -5,15 +5,11 @@ const dns = require("dns");
 const User = require("./model/user");
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
+app.use(express.json());
 app.post("/signUp", async (req, res) => {
-  const userObj = {
-    firstName: "Virat",
-    lastName: "Kohli",
-    email: "virat@gmail.com",
-    password: "test@123",
-  };
   try {
-    const user = new User(userObj);
+    console.log(req.body);
+    const user = new User(req.body);
     await user.save();
     res.send("user saved successfully!");
   } catch (err) {
