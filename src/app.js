@@ -30,12 +30,34 @@ app.get("/feed", async (req, res) => {
 });
 app.post("/signUp", async (req, res) => {
   try {
-    console.log(req.body);
     const user = new User(req.body);
     await user.save();
     res.send("user saved successfully!");
   } catch (err) {
     res.status(400).send("not able to signUp ", err);
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const user = await User.findByIdAndDelete(userId);
+    res.send("user deleted sucessfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong!", err);
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  try {
+    const email = req.body.email;
+    const data = req.body;
+    const user = await User.findOneAndUpdate({ email: req.body.email }, data);
+    res.send("User updated sucessfully!");
+  } catch (err) {
+    console.log(err);
+
+    res.send("Something went wrong!", err);
   }
 });
 
