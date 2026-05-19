@@ -17,7 +17,6 @@ const userSchema = new Schema(
     age: {
       type: Number,
       min: 18,
-      required: true,
     },
     email: {
       type: String,
@@ -49,7 +48,6 @@ const userSchema = new Schema(
     gender: {
       type: String,
       lowercase: true,
-      required: true,
       validate(value) {
         if (!["male", "female", "others"].includes(value)) {
           throw new Error("Gender is not valide!");

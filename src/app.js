@@ -3,9 +3,31 @@ const connectDB = require("./config/database");
 const app = express();
 const dns = require("dns");
 const User = require("./model/user");
+const bcrypt = require("bcrypt");
+const { signUpValidate } = require("./utils/validate");
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 app.use(express.json());
+
+app.post("/signUp", async (req, res) => {
+  try {
+    //validate with util function
+    signUpValidate(req);
+    const { firstName, lastName, email, password } = req.body;
+    //password encrypt using bcrypt
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash,
+    });
+    await user.save();
+    res.send("user saved successfully!");
+  } catch (err) {
+    res.status(400).send("not able to signUp " + err.message);
+  }
+});
 
 app.get("/user", async (req, res) => {
   try {
@@ -20,25 +42,6 @@ app.get("/feed", async (req, res) => {
   try {
     const user = await User.find({});
     res.send(user);
-  } catch (err) {
-    res.status(400).send("Something went wrong!" + err.message);
-  }
-});
-app.post("/signUp", async (req, res) => {
-  try {
-    const user = new User(req.body);
-    await user.save();
-    res.send("user saved successfully!");
-  } catch (err) {
-    res.status(400).send("not able to signUp " + err.message);
-  }
-});
-
-app.delete("/user", async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    const user = await User.findByIdAndDelete(userId);
-    res.send("user deleted sucessfully");
   } catch (err) {
     res.status(400).send("Something went wrong!" + err.message);
   }
@@ -70,6 +73,16 @@ app.patch("/user/:userId", async (req, res) => {
       runValidators: true,
     });
     res.send("User updated sucessfully!");
+  } catch (err) {
+    res.status(400).send("Something went wrong!" + err.message);
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const user = await User.findByIdAndDelete(userId);
+    res.send("user deleted sucessfully");
   } catch (err) {
     res.status(400).send("Something went wrong!" + err.message);
   }
