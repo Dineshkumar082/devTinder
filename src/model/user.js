@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const validator = require("validator");
 const userSchema = new Schema(
   {
     firstName: {
@@ -24,11 +25,21 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
       required: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("This is not an valid email");
+        }
+      },
     },
     password: {
       type: String,
       minLength: 10,
       required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("This is not a strong password");
+        }
+      },
     },
     about: {
       type: String,
@@ -49,6 +60,11 @@ const userSchema = new Schema(
       type: String,
       default:
         "https://www.shutterstock.com/image-vector/default-avatar-social-media-display-600nw-2632690107.jpg",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("This is not an valid Photo URL");
+        }
+      },
     },
     skill: {
       type: [String],
