@@ -16,7 +16,7 @@ app.get("/user", async (req, res) => {
   } catch (err) {
     console.log(err);
 
-    res.status(400).send("Something went wrong!", err);
+    res.status(400).send("Something went wrong!" + err.message);
   }
 });
 
@@ -25,7 +25,7 @@ app.get("/feed", async (req, res) => {
     const user = await User.find({});
     res.send(user);
   } catch (err) {
-    res.send("Something went wrong!", err);
+    res.send("Something went wrong!" + err.message);
   }
 });
 app.post("/signUp", async (req, res) => {
@@ -34,7 +34,7 @@ app.post("/signUp", async (req, res) => {
     await user.save();
     res.send("user saved successfully!");
   } catch (err) {
-    res.status(400).send("not able to signUp ", err);
+    res.status(400).send("not able to signUp " + err.message);
   }
 });
 
@@ -44,20 +44,22 @@ app.delete("/user", async (req, res) => {
     const user = await User.findByIdAndDelete(userId);
     res.send("user deleted sucessfully");
   } catch (err) {
-    res.status(400).send("Something went wrong!", err);
+    res.status(400).send("Something went wrong!" + err.message);
   }
 });
 
 app.patch("/user", async (req, res) => {
   try {
-    const email = req.body.email;
+    const userId = req.body.userId;
     const data = req.body;
-    const user = await User.findOneAndUpdate({ email: req.body.email }, data);
+    const user = await User.findByIdAndUpdate(req.body.userId, data, {
+      runValidators: true,
+    });
     res.send("User updated sucessfully!");
   } catch (err) {
     console.log(err);
 
-    res.send("Something went wrong!", err);
+    res.send("Something went wrong!" + err.message);
   }
 });
 
@@ -69,5 +71,5 @@ connectDB()
     });
   })
   .catch((err) => {
-    console.error("Database cannot be connected!!", err);
+    console.error("Database cannot be connected!!" + err.message);
   });
