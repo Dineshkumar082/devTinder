@@ -10,12 +10,8 @@ app.use(express.json());
 app.get("/user", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
-    console.log(user);
-
     res.send(user);
   } catch (err) {
-    console.log(err);
-
     res.status(400).send("Something went wrong!" + err.message);
   }
 });
@@ -25,7 +21,7 @@ app.get("/feed", async (req, res) => {
     const user = await User.find({});
     res.send(user);
   } catch (err) {
-    res.send("Something went wrong!" + err.message);
+    res.status(400).send("Something went wrong!" + err.message);
   }
 });
 app.post("/signUp", async (req, res) => {
@@ -48,18 +44,34 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
   try {
-    const userId = req.body.userId;
+    const UPDATE_ALLOWED = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "password",
+      "about",
+      "skill",
+    ];
+    const isAllowed = Object.keys(req.body).every((k) =>
+      UPDATE_ALLOWED.includes(k),
+    );
+    console.log(isAllowed);
+    if (!isAllowed) {
+      throw new Error("Update not allowed for certain fields");
+    }
+    if (req.body.skill.length > 10) {
+      throw new Error("Skill must be less than or equal to 10");
+    }
+    const userId = req.params.userId;
     const data = req.body;
-    const user = await User.findByIdAndUpdate(req.body.userId, data, {
+    const user = await User.findByIdAndUpdate(userId, data, {
       runValidators: true,
     });
     res.send("User updated sucessfully!");
   } catch (err) {
-    console.log(err);
-
-    res.send("Something went wrong!" + err.message);
+    res.status(400).send("Something went wrong!" + err.message);
   }
 });
 
