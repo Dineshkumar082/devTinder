@@ -29,12 +29,31 @@ app.post("/signUp", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Invalid user credentials!");
+    }
+    const passwordCheck = await bcrypt.compare(password, user.password);
+
+    if (passwordCheck) {
+      res.send("User logged in sucessful!");
+    } else {
+      throw new Error("Invalid user credentials! ");
+    }
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
+  }
+});
+
 app.get("/user", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     res.send(user);
   } catch (err) {
-    res.status(400).send("Something went wrong!" + err.message);
+    res.status(400).send("ERROR : " + err.message);
   }
 });
 
@@ -43,7 +62,7 @@ app.get("/feed", async (req, res) => {
     const user = await User.find({});
     res.send(user);
   } catch (err) {
-    res.status(400).send("Something went wrong!" + err.message);
+    res.status(400).send("ERROR : " + err.message);
   }
 });
 
@@ -74,7 +93,7 @@ app.patch("/user/:userId", async (req, res) => {
     });
     res.send("User updated sucessfully!");
   } catch (err) {
-    res.status(400).send("Something went wrong!" + err.message);
+    res.status(400).send("ERROR : " + err.message);
   }
 });
 
@@ -84,7 +103,7 @@ app.delete("/user", async (req, res) => {
     const user = await User.findByIdAndDelete(userId);
     res.send("user deleted sucessfully");
   } catch (err) {
-    res.status(400).send("Something went wrong!" + err.message);
+    res.status(400).send("ERROR : " + err.message);
   }
 });
 
