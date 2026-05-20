@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const { signUpValidate } = require("./utils/validate");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const userAuth = require("./middleware/auth");
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 app.use(express.json());
@@ -39,13 +40,18 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid user credentials!");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
+    console.log(isPasswordValid);
 
     if (isPasswordValid) {
       //create the jwt token
-      const jwtToken = await jwt.sign({ _id: user._id }, "CloseAndOpen@123");
+      const jwtToken = await user.getJWT();
+      console.log(jwtToken);
+
       //create the cookie and pass the token
-      const cookie = res.cookie("token", jwtToken);
+      const cookie = res.cookie("token", jwtToken, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
       res.send("logged in sucessful!");
     } else {
       throw new Error("Invalid user credentials! ");
@@ -55,16 +61,18 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.post("/sendConnection", userAuth, async (req, res) => {
   try {
-    const { token } = req.cookies;
-    const userId = jwt.verify(token, "CloseAndOpen@123");
-    const user = await User.findOne({ _id: userId._id });
-    console.log(user);
+    const user = req.user;
+    res.send(user.firstName + " making connection request!");
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
+  }
+});
 
-    if (!user) {
-      throw new Error("Token expired, need to login again");
-    }
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
