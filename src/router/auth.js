@@ -3,6 +3,7 @@ const authRouter = express.Router();
 const { signUpValidate } = require("../utils/validate");
 const User = require("../model/user");
 const bcrypt = require("bcrypt");
+
 authRouter.post("/signUp", async (req, res) => {
   try {
     //validate with util function
@@ -46,6 +47,15 @@ authRouter.post("/login", async (req, res) => {
     } else {
       throw new Error("Invalid user credentials! ");
     }
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
+  }
+});
+
+authRouter.post("/logout", async (req, res) => {
+  try {
+    await res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.send("Logout sucessfully!");
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
   }
