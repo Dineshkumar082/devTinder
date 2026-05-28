@@ -26,16 +26,10 @@ requestRouter.post(
         return res.status(400).send("Invalid request!");
       }
 
-      const isRequestBefore = connectionRequest.findOne({
+      const isRequestBefore = await connectionRequest.findOne({
         $or: [
-          {
-            toUserId,
-            fromUserId,
-          },
-          {
-            toUserId: fromUserId,
-            fromUserId: toUser,
-          },
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
         ],
       });
 
@@ -50,6 +44,44 @@ requestRouter.post(
       });
       await request.save();
       res.send("connection request send saved successfully!");
+    } catch (err) {
+      res.status(400).send("ERROR : " + err.message);
+    }
+  },
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status, requestId } = req.params;
+      const isAllowedStatus = ["accepted", "rejected"];
+      if (!isAllowedStatus.includes(status)) {
+        return res.status(400).send("request status not accepted");
+      }
+      const isValidRequestId = await connectionRequest.findById(requestId);
+
+      if (!isValidRequestId) {
+        return res.status(400).send("request id is not valid");
+      }
+      const loggedInUser = req.user;
+
+      const findConnectionRequest = await connectionRequest.findOne({
+        _id: requestId,
+        status: "interested",
+        toUserId: loggedInUser.id,
+      });
+      if (!findConnectionRequest) {
+        return res.status(404).send("connection request not found!");
+      }
+
+      findConnectionRequest.status = status;
+      const data = await findConnectionRequest.save();
+      res.json({
+        message: "connection request " + status,
+        data,
+      });
     } catch (err) {
       res.status(400).send("ERROR : " + err.message);
     }
