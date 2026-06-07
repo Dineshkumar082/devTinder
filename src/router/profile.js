@@ -6,6 +6,7 @@ const {
   validateUpdatePassword,
 } = require("../utils/validate");
 const bcrypt = require("bcrypt");
+
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
@@ -35,10 +36,9 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   }
 });
 
-profileRouter.patch("profile/password", userAuth, async (req, res) => {
+profileRouter.patch("/profile/password", userAuth, async (req, res) => {
   try {
     const user = req.user;
-    console.log(user);
 
     //validateUpdatePassword
     validateUpdatePassword(req);

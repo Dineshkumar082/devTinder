@@ -32,18 +32,16 @@ authRouter.post("/login", async (req, res) => {
       throw new Error("Invalid user credentials!");
     }
     const isPasswordValid = await user.validatePassword(password);
-    console.log(isPasswordValid);
 
     if (isPasswordValid) {
       //create the jwt token
       const jwtToken = await user.getJWT();
-      console.log(jwtToken);
 
       //create the cookie and pass the token
       const cookie = res.cookie("token", jwtToken, {
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.send("logged in sucessful!");
+      res.send(user);
     } else {
       throw new Error("Invalid user credentials! ");
     }
