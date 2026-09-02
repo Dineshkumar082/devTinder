@@ -18,7 +18,13 @@ authRouter.post("/signUp", async (req, res) => {
       password: passwordHash,
     });
     await user.save();
-    res.send("user saved successfully!");
+    const jwtToken = await user.getJWT();
+
+      //create the cookie and pass the token
+      const cookie = res.cookie("token", jwtToken, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+      res.send(user);
   } catch (err) {
     res.status(400).send("not able to signUp " + err.message);
   }
